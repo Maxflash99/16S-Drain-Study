@@ -1,0 +1,65 @@
+#!/bin/sh -l
+
+#SBATCH --nodes=5                    ##number of requested nodes (a node is a group of CPUs)
+#SBATCH -n 20                        ##number of requested CPUs
+#SBATCH --time=14:00:00              ##time requested
+#SBATCH --job-name MP-pipeline       ##name of job
+#SBATCH -A microbiome                ##name of the queue you are using. Could be scholar or microbiome if you $
+
+#########################################################################
+
+echo "Start time"
+date +"%d %B %Y %H:%M:%S"
+
+#step 1, cd into the proper directory. This directory must already exist
+
+cd $RCAC_SCRATCH
+cd Drainstudy
+
+pwd
+
+#step 2, Load Modules
+
+echo "loading bioinfo"
+module load bioinfo
+
+echo "loading qiime2-2023.9"
+module load Qiime/2-2023.9
+
+#step 3, run the code you want
+
+qiime feature-table filter-samples \
+  --i-table table.qza \
+  --m-metadata-file Metadata.txt \
+  --p-where "[Store]='S5'" \
+  --o-filtered-table gut-table.qza
+
+qiime composition ancombc \
+  --i-table table.qza \
+  --m-metadata-file Metadata.txt \
+  --p-formula 'Week' \
+  --o-differentials ancombc-subject.qza
+
+qiime composition da-barplot \
+  --i-data ancombc-subject.qza \
+  --p-significance-threshold 0.001 \
+  --o-visualization da-barplot-subject.qzv
+
+qiime taxa collapse \
+  --i-table table.qza \
+  --i-taxonomy taxonomy.qza \
+  --p-level 6 \
+  --o-collapsed-table table-l6.qza
+
+qiime composition ancombc \
+  --i-table table-l6.qza \
+  --m-metadata-file Metadata.txt \
+  --p-formula 'Week' \
+  --o-differentials l6-ancombc-subject.qza
+
+qiime composition da-barplot \
+  --i-data l6-ancombc-subject.qza \
+  --p-significance-threshold 0.001 \
+  --p-level-delimiter ';' \
+  --o-visualization l6-da-barplot-subject.qzv
+
