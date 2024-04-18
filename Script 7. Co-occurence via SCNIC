@@ -1,0 +1,24 @@
+# Installing Conda
+
+conda install -c conda-forge blas=1.1
+
+conda install -c lozuponelab q2-SCNIC
+
+# Filtering Data
+
+qiime SCNIC sparcc-filter \
+  --i-table table.qza \
+  --o-table-filtered table-filtered.qza
+
+# Calculating correlations
+
+qiime SCNIC calculate-correlations \
+  --i-table table-filtered.qza \
+  --p-method sparcc \
+  --o-correlation-table correls.qza
+
+
+qiime SCNIC build-correlation-network-r \
+  --i-correlation-table correls.qza \
+  --p-min-val .35 \
+  --o-correlation-network net.qza
