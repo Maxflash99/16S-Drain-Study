@@ -1,0 +1,34 @@
+#Installing PiCrust2
+
+module load anaconda/2020.02-py37
+rcac-conda-env delete -n qiime2-2021.2
+wget https://data.qiime2.org/distro/core/qiime2-2021.2-py36-linux-conda.yml
+conda env create -n qiime2-2021.2 --file qiime2-2021.2-py36-linux-conda.yml
+rm qiime2-2021.2-py36-linux-conda.yml
+qiime tools import --help
+
+rcac-conda-env module -n qiime2-2021.2 --local-python
+
+python --version 		# reports 3.7.6
+module load use.own
+module load conda-env/qiime2-2021.2-py3.7.6
+python --version 		# now from inside reports 3.6.13
+qiime tools import --help
+
+(Based on https://library.qiime2.org/plugins/q2-picrust2/13/)
+
+conda install q2-picrust2=2024.2 -c conda-forge -c bioconda -c gavinmdouglas
+
+qiime picrust2 full-pipeline --help
+
+#Using PiCrust2
+
+qiime picrust2 full-pipeline \
+   --i-table table.qza \
+   --i-seq rep-seqs.qza \
+   --output-dir Drainstudy \
+   --p-placement-tool sepp \
+   --p-threads 1 \
+   --p-hsp-method pic \
+   --p-max-nsti 2 \
+   --verbose
